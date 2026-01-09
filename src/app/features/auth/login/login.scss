@@ -1,0 +1,12 @@
+:host {
+  height: 100dvh;
+  display: flex;
+  align-items: center;
+  margin: 0 auto;
+}
+
+@media (min-width: 720px) {
+  :host {
+    max-width: 650px;
+  }
+}
