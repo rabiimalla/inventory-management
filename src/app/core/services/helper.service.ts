@@ -1,1 +1,1 @@
-export const randomId = () => Date.now().toString(36);
+export const randomId = () => Date.now().toString(36) + Math.random().toString(16).substring(2);
