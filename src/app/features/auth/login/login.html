@@ -4,15 +4,41 @@
     <p>Please login to continue</p>
   </div>
 
-  <form>
+  <form (submit)="handleLogin($event)">
     <div class="mb-3">
       <label for="username" class="form-label">Username</label>
-      <input type="text" name="username" id="username" class="form-control" placeholder="admin_user123">
+      <input
+        type="text"
+        id="username"
+        class="form-control"
+        [class.border-danger]="usernameError()"
+        placeholder="admin_user123"
+        [field]="loginForm.username"
+      />
+      @if(usernameError()) {
+        <small class="d-inline-block mt-1 text-danger"> {{ usernameError() }} </small>
+      }
     </div>
     <div class="mb-3">
       <label for="password" class="form-label">Password</label>
-      <input type="password" name="password" id="password" class="form-control">
+      <input 
+        type="password" 
+        id="password" 
+        class="form-control" 
+        [class.border-danger]="passwordError()"
+        [field]="loginForm.password" 
+      />
+      @if(passwordError()) {
+        <small class="d-inline-block mt-1 text-danger"> {{ passwordError() }} </small>
+      }
     </div>
-    <button type="submit" class="btn btn-primary">Submit</button>
+    <!-- Disable submit button when the form is invalid or when it is being submitted -->
+    <button
+      type="submit"
+      class="btn btn-primary"
+      [disabled]="loginForm().invalid() || loginForm().submitting()"
+    >
+      Submit
+    </button>
   </form>
 </div>
