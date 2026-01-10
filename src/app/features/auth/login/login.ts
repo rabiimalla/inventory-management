@@ -1,26 +1,38 @@
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { AsyncPipe } from '@angular/common';
 import { form, minLength, required, Field } from '@angular/forms/signals';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 
+import { Observable, of } from 'rxjs';
+
+import { UserParams } from '../../../core/interfaces/user.interface';
 import { AuthLogin } from '../../../core/interfaces/auth-login.interface';
+import { StorageService } from '../../../core/services/storage.service';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-login',
-  imports: [Field],
+  imports: [Field, AsyncPipe],
   templateUrl: './login.html',
   styleUrl: './login.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class Login {
+export class Login implements OnInit {
+  users$: Observable<UserParams[] | null> = of(null);
+  seedPopulated = signal(false);
   private destroyRef = inject(DestroyRef);
 
   constructor(
     private router: Router, 
-    private auth: AuthService
+    private auth: AuthService, 
+    private storage: StorageService
   ) {}
-  
+
+  ngOnInit(): void {
+    this.users$ = this.storage.users$;
+  }
+
   loginFormModel = signal<AuthLogin>({
     username: '',
     password: '',
@@ -69,5 +81,10 @@ export class Login {
           console.log('There is an error: ', error);
         },
       });
+  }
+
+  populate() {
+    this.storage.populateDefaultRolesAndUsers();
+    this.seedPopulated.set(true);
   }
 }

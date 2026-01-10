@@ -1,44 +1,67 @@
 <div class="container">
-  <div class="header">
-    <h1>Welcome to Inventory System</h1>
-    <p>Please login to continue</p>
-  </div>
+  @if(users$ | async; as users;) {
+    @if(users.length > 0) {
+      <div class="header">
+        <h1>Welcome to Inventory System</h1>
+        <p>Please login to continue</p>
+      </div>
 
-  <form (submit)="handleLogin($event)">
-    <div class="mb-3">
-      <label for="username" class="form-label">Username</label>
-      <input
-        type="text"
-        id="username"
-        class="form-control"
-        [class.border-danger]="usernameError()"
-        placeholder="admin_user123"
-        [field]="loginForm.username"
-      />
-      @if(usernameError()) {
-        <small class="d-inline-block mt-1 text-danger"> {{ usernameError() }} </small>
+      <form (submit)="handleLogin($event)">
+        <div class="mb-3">
+          <label for="username" class="form-label">Username</label>
+          <input
+            type="text"
+            id="username"
+            class="form-control"
+            [class.border-danger]="usernameError()"
+            placeholder="admin_user123"
+            [field]="loginForm.username"
+          />
+          @if(usernameError()) {
+            <small class="d-inline-block mt-1 text-danger"> {{ usernameError() }} </small>
+          }
+        </div>
+        <div class="mb-3">
+          <label for="password" class="form-label">Password</label>
+          <input 
+            type="password" 
+            id="password" 
+            class="form-control" 
+            [class.border-danger]="passwordError()"
+            [field]="loginForm.password" 
+          />
+          @if(passwordError()) {
+            <small class="d-inline-block mt-1 text-danger"> {{ passwordError() }} </small>
+          }
+        </div>
+        <!-- Disable submit button when the form is invalid or when it is being submitted -->
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="loginForm().invalid() || loginForm().submitting()"
+        >
+          Submit
+        </button>
+      </form>
+      @if (seedPopulated()) {
+        <p class="text-info mt-4">Roles and few users populated successfully</p>
+        <small>NOTE: In production app, some sort of toast should be used to display this type of message.</small>
       }
-    </div>
-    <div class="mb-3">
-      <label for="password" class="form-label">Password</label>
-      <input 
-        type="password" 
-        id="password" 
-        class="form-control" 
-        [class.border-danger]="passwordError()"
-        [field]="loginForm.password" 
-      />
-      @if(passwordError()) {
-        <small class="d-inline-block mt-1 text-danger"> {{ passwordError() }} </small>
-      }
-    </div>
-    <!-- Disable submit button when the form is invalid or when it is being submitted -->
-    <button
-      type="submit"
-      class="btn btn-primary"
-      [disabled]="loginForm().invalid() || loginForm().submitting()"
-    >
-      Submit
-    </button>
-  </form>
+    } @else {
+      <div class="header">
+        <h1>Welcome to Inventory Management System</h1>
+        <p class="mt-2">
+          Please click the button below to seed few users. Among other it will create one admin user with the following login credentials: 
+        </p>
+        <p class="my-2 py-2">
+          <code>username: admin_user, password: password</code>
+        </p>
+        <h6 class="mt-4 text-light-empahsis">NOTE: This is only shown for demo reason. In the real app, the backend would normally create some admin user who can then add more users and roles</h6>
+      </div>
+
+      <button class="btn btn-primary mt-5" (click)="populate()">
+        Click to populate
+      </button>
+    }
+  } 
 </div>
