@@ -7,6 +7,11 @@ export const routes: Routes = [
     component: Login
   },
   {
+    path: 'unauthorized',
+    loadComponent: () => import('./features/auth/unauthorized/unauthorized')
+      .then(m => m.Unauthorized)
+  },
+  {
     path: '',
     redirectTo: '/login',
     pathMatch: 'full'
