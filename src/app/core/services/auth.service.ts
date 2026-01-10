@@ -1,4 +1,4 @@
-import { DestroyRef, inject, Injectable, signal } from '@angular/core';
+import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { map, Observable } from 'rxjs';
@@ -8,13 +8,16 @@ import { AuthLogin } from '../interfaces/auth-login.interface';
 
 import { RoleParams } from '../interfaces/role.interface';
 import { UserParams } from '../interfaces/user.interface';
+import { Permission } from '../enums/permission.enum';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private currentUserSignal = signal<UserParams | null>(null);
   private currentRoleSignal = signal<RoleParams | null>(null);
+  userPermissions = computed(() => this.currentRoleSignal()?.permissions || []);
+  
   private destroyRef = inject(DestroyRef);
-
+  
   constructor(private storage: StorageService) {
     /* Restore the session from localStorage */
     const savedUser = localStorage.getItem('currentUser');
@@ -42,6 +45,14 @@ export class AuthService {
         
       })
     );
+  }
+
+  hasPermission(permission: Permission): boolean {
+    return this.userPermissions().includes(permission);
+  }
+
+  canAccess(permissions: Permission[]): boolean {
+    return permissions.some(permission => this.hasPermission(permission));
   }
 
   private setCurrentUser(user: UserParams) {
