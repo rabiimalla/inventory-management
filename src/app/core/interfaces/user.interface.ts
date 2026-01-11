@@ -4,7 +4,7 @@ export interface UserParams {
   username: string;
   email: string;
   roleId: string;
-  createdAt: Date;
-  updatedAt: Date;
-  roleName?: string 
+  createdAt: Date | undefined;
+  updatedAt: Date | undefined;
+  roleName?: string;
 }

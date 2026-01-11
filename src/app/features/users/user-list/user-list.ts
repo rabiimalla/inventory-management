@@ -1,4 +1,5 @@
-import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, Signal, signal } from '@angular/core';
+import { email, Field, FieldState, form, minLength, required } from '@angular/forms/signals';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { AuthService } from '../../../core/services/auth.service';
@@ -10,7 +11,7 @@ import { UserService } from '../../../core/services/user.service';
 
 @Component({
   selector: 'app-user-list',
-  imports: [],
+  imports: [Field],
   templateUrl: './user-list.html',
   styleUrl: './user-list.scss',
 })
@@ -22,7 +23,34 @@ export class UserList implements OnInit {
 
   /* Modal state */
   showUserModal = signal(false);
-  editingUser = signal<RoleParams | null>(null);
+  editingUser = signal<UserParams | null>(null);
+
+  private emptyUser: UserParams = {
+    id: '',
+    fullname: '',
+    email: '',
+    username: '',
+    roleId: '',
+    createdAt: undefined,
+    updatedAt: undefined,
+    roleName: '',
+  };
+
+  /* create signal form with basic validation */
+  userFormModel = signal<UserParams>(this.emptyUser);
+  userForm = form(this.userFormModel, (userFormSchema) => {
+    required(userFormSchema.fullname, { message: 'Name is required.' });
+    minLength(userFormSchema.fullname, 4, { message: 'Name must have at least 4 characters' });
+    email(userFormSchema.email, { message: 'Provide a valid email address.' });
+    required(userFormSchema.username, { message: 'Username is required' });
+    minLength(userFormSchema.username, 6, { message: 'Username must have at least 6 characters' });
+    required(userFormSchema.roleId, { message: 'Must select one role.' });
+  });
+
+  fullnameError = this.formFieldErrors(this.userForm.fullname());
+  emailError = this.formFieldErrors(this.userForm.email());
+  usernameError = this.formFieldErrors(this.userForm.username());
+  roleIdError = this.formFieldErrors(this.userForm.roleId());
 
   constructor(
     private auth: AuthService,
@@ -36,35 +64,78 @@ export class UserList implements OnInit {
     this.loadUsers();
   }
 
-  loadRoles(){
+  loadRoles() {
     this.roleService.roles$
-    .pipe(
-      takeUntilDestroyed(this.destroyRef)
-    )
-    .subscribe((roles) => this.roles.set(roles));
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((roles) => this.roles.set(roles));
   }
 
-  loadUsers(){
+  loadUsers() {
     this.userService.users$
-    .pipe(
-      takeUntilDestroyed(this.destroyRef)
-    )
-    .subscribe((users) => this.users.set(users));
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((users) => this.users.set(users));
   }
 
   openUserModal(user?: UserParams) {
+    this.editingUser.set(user ? user : null);
+    user
+      ? this.userFormModel.update((current) => ({
+          ...current,
+          fullname: user.fullname,
+          email: user.email,
+          roleId: user.roleId,
+          roleName: user.roleName,
+        }))
+      : this.userForm().reset(this.emptyUser);
 
+    this.showUserModal.set(true);
   }
 
   closeUserModal() {
-
+    this.showUserModal.set(false);
+    this.editingUser.set(null);
+    this.userForm().reset(this.emptyUser);
   }
 
   saveUser(event: SubmitEvent) {
+    event.preventDefault();
 
+    const userData = this.userForm().value();
+
+    if (this.editingUser()) {
+    } else {
+      /* Update roleName if creating a new user */
+      const roleName = this.roles().find((r) => r.id === userData.roleId)?.name || '';
+      userData.roleName = roleName;
+
+      this.userService
+        .createUser(userData)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: () => {
+            this.showToast('User created successfully', 'success');
+            this.closeUserModal();
+          },
+          error: (error) => {
+            this.showToast(error.message || 'Failed to create user', 'danger');
+          },
+        });
+    }
   }
 
-  deleteUser(userId: string) {
+  deleteUser(userId: string) {}
 
+  private formFieldErrors(field: FieldState<string, string>): Signal<string | undefined> {
+    return computed(() => {
+      if (field.touched() && field.dirty() && field.errors()) {
+        return field.errors()[0]?.message;
+      }
+      return '';
+    });
+  }
+
+  private showToast(message: string, type: 'success' | 'danger' | 'warning') {
+    // Simply show an alert for demo. In real project, a toast service should be used instead
+    alert(`${type.toUpperCase()}: ${message}`);
   }
 }

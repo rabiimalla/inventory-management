@@ -96,6 +96,91 @@
             (click)="closeUserModal()"
           ></button>
         </div>
+
+        <form (submit)="saveUser($event)">
+          <div class="modal-body">
+            <!-- User Name -->
+            <div class="mb-3">
+              <label for="fullname" class="form-label">Name *</label>
+              <input 
+                type="text" 
+                class="form-control"
+                id="fullname"
+                [field]="userForm.fullname"
+                [class.is-invalid]="fullnameError()"
+                placeholder="John doe"
+              />
+
+              @if(fullnameError()) {
+                <small class="d-inline-block mt-1 text-danger"> {{ fullnameError() }} </small>
+              }
+            </div>
+            <!-- Username -->
+            <div class="mb-3">
+              <label for="username" class="form-label">Username *</label>
+              <input 
+                type="text" 
+                class="form-control"
+                id="username"
+                [field]="userForm.username"
+                [class.is-invalid]="usernameError()"
+                placeholder="john_doe123"
+              />
+
+              @if(usernameError()) {
+                <small class="d-inline-block mt-1 text-danger"> {{ usernameError() }} </small>
+              }
+            </div>
+            <!-- Email -->
+            <div class="mb-3">
+              <label for="email" class="form-label">Email *</label>
+              <input 
+                type="text" 
+                class="form-control"
+                id="email"
+                [field]="userForm.email"
+                [class.is-invalid]="emailError()"
+                placeholder="john.doe@email.com"
+              />
+
+              @if(emailError()) {
+                <small class="d-inline-block mt-1 text-danger"> {{ emailError() }} </small>
+              }
+            </div>
+
+            <!-- Role -->
+            <div class="mb-3">
+              <label for="role-id" class="form-label mb-3">Role*</label>
+              <select class="form-select" [field]="userForm.roleId" id="role-id">
+                <option value="">Select a role</option>
+                @for (role of roles(); track role.id) {
+                  <option [value]="role.id">{{role.name}}</option>
+                }
+              </select>
+
+              @if(roleIdError()) {
+                <small class="d-inline-block mt-2 text-danger"> {{ roleIdError() }} </small>
+              }
+            </div>
+          </div>
+          
+          <div class="modal-footer">
+            <button 
+              type="button" 
+              class="btn btn-secondary" 
+              (click)="closeUserModal()"
+            >
+              Cancel
+            </button>
+            <button 
+              type="submit" 
+              class="btn btn-primary"
+              [disabled]="userForm().invalid() || userForm().submitting()"
+            >
+              {{ editingUser() ? 'Update User' : 'Create User' }}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
