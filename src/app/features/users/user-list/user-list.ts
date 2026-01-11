@@ -126,7 +126,21 @@ export class UserList implements OnInit {
     return this.roles().find(r => r.id === roleId)?.name || '';
   }
 
-  deleteUser(userId: string) {}
+  deleteUser(userId: string) {
+    /* Just show normal js confirm for simplicity sake. */
+    const confirmDelete = confirm('DANGER: Are you sure, you want to delete this user?');
+    
+    if(confirmDelete){
+      this.userService.deleteUser(userId)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe({
+        next: () => this.showToast('User deleted successfully', 'success'),
+        error: (error) => this.showToast(error.message || 'Failed to delete user', 'danger')
+      })
+    }
+  }
 
   private formFieldErrors(field: FieldState<string, string>): Signal<string | undefined> {
     return computed(() => {

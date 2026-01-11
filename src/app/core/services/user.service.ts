@@ -60,6 +60,23 @@ export class UserService {
     return of(updatedUser).pipe(delay(300));
   }
 
+  deleteUser(id: string): Observable<boolean> {
+    const user = this.usersSignal().find((user) => user.id === id);
+    if (!user) {
+      return throwError(() => new Error('User not found'));
+    }
+
+    if(user.username === 'admin_user') {
+      return throwError(() => new Error('Can not delete default admin user'));
+    }
+
+    const updatedUsers = this.usersSignal().filter((user) => user.id !== id);
+    this.usersSignal.set(updatedUsers);
+    saveToStorage('users', updatedUsers);
+
+    return of(true).pipe(delay(300));
+  }
+
   private checkDuplicateUser(
     user: Partial<UserParams>,
     userIndex?: number
