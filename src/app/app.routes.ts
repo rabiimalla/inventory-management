@@ -16,6 +16,13 @@ export const routes: Routes = [
     data: { permissions: [Permission.MANAGE_ROLES]}
   },
   {
+    path: 'users',
+    loadComponent: () => import('./features/users/user-list/user-list')
+      .then(m => m.UserList),
+    canActivate: [RoleGuard],
+    data: { permissions: [Permission.MANAGE_USERS]}
+  },
+  {
     path: 'unauthorized',
     loadComponent: () => import('./features/auth/unauthorized/unauthorized')
       .then(m => m.Unauthorized)
