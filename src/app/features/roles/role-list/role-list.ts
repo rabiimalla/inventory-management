@@ -140,6 +140,22 @@ export class RoleList implements OnInit {
     }
   }
 
+  deleteRole(role: RoleParams) {
+    /* Just show normal js confirm for simplicity sake. */
+    const confirmDelete = confirm('DANGER: Are you sure, you want to delete this role?');
+    
+    if(confirmDelete){
+      this.roleService.deleteRole(role.id!)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe({
+        next: () => this.showToast('Role deleted successfully', 'success'),
+        error: (error) => this.showToast(error.message || 'Failed to delete role', 'danger')
+      })
+    }
+  }
+
   private showToast(message: string, type: 'success' | 'danger' | 'warning') {
     // Simply show an alert for demo. In real project, a toast service should be used instead
     alert(`${type.toUpperCase()}: ${message}`);
