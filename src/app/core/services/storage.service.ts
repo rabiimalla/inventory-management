@@ -23,10 +23,7 @@ export class StorageService{
   }
 
   getRoles(): Observable<RoleParams[]> {
-    return of(this.rolesSignal()).pipe(
-      delay(300),
-      map(role => role)
-    );
+    return of(this.rolesSignal());
   }
 
   getFromStorage<T>(key: string): T | null {

@@ -14,7 +14,6 @@ import { Permission } from '../enums/permission.enum';
 export class AuthService {
   private currentUserSignal = signal<UserParams | null>(null);
   private currentRoleSignal = signal<RoleParams | null>(null);
-  userPermissions = computed(() => this.currentRoleSignal()?.permissions || []);
   
   private destroyRef = inject(DestroyRef);
   
@@ -48,7 +47,7 @@ export class AuthService {
   }
 
   hasPermission(permission: Permission): boolean {
-    return this.userPermissions().includes(permission);
+    return (this.currentRoleSignal()?.permissions || []).includes(permission);
   }
 
   canAccess(permissions: Permission[]): boolean {
