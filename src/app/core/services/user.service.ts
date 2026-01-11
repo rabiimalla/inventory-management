@@ -27,7 +27,7 @@ export class UserService {
 
     const updatedUsers = [...this.usersSignal(), newUser];
     this.usersSignal.set(updatedUsers);
-    saveToStorage('roles', updatedUsers);
+    saveToStorage('users', updatedUsers);
 
     return of(newUser).pipe(delay(300));
   }
