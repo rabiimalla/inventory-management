@@ -72,17 +72,13 @@ export class RoleList implements OnInit {
       .subscribe((roles) => this.roles.set(roles));
   }
 
-  openCreateModal() {
-    this.editingRole.set(null);
-    this.selectedPermissions.set([]);
-    this.roleForm().reset(this.emptyRole);
-    this.showRoleModal.set(true);
-  }
+  openRoleModal(role?: RoleParams) {
+    this.editingRole.set(role ? role : null);
+    this.selectedPermissions.set(role ? [...role.permissions] : []);
+    role ? 
+      this.roleModel.update((current) => ({ ...current, name: role.name })) : 
+      this.roleForm().reset(this.emptyRole);
 
-  openEditModal(role: RoleParams): void {
-    this.editingRole.set(role);
-    this.selectedPermissions.set([...role.permissions]);
-    this.roleModel.update((current) => ({ ...current, name: role.name }));
     this.showRoleModal.set(true);
   }
 

@@ -9,7 +9,7 @@
     @if(canManageRoles()) {
       <button 
         class="btn btn-primary"
-        (click)="openCreateModal()"
+        (click)="openRoleModal()"
       >
         Create Role
       </button>
@@ -60,7 +60,7 @@
                     <div class="btn-group" role="group">
                       <button 
                         class="btn btn-sm btn-outline-primary"
-                        (click)="openEditModal(role)"
+                        (click)="openRoleModal(role)"
                       >
                         <i class="bi bi-pencil"></i>
                       </button>
