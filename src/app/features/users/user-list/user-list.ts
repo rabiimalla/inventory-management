@@ -33,7 +33,6 @@ export class UserList implements OnInit {
     roleId: '',
     createdAt: undefined,
     updatedAt: undefined,
-    roleName: '',
   };
 
   /* create signal form with basic validation */
@@ -79,13 +78,7 @@ export class UserList implements OnInit {
   openUserModal(user?: UserParams) {
     this.editingUser.set(user ? user : null);
     user
-      ? this.userFormModel.update((current) => ({
-          ...current,
-          fullname: user.fullname,
-          email: user.email,
-          roleId: user.roleId,
-          roleName: user.roleName,
-        }))
+      ? this.userFormModel.set(user)
       : this.userForm().reset(this.emptyUser);
 
     this.showUserModal.set(true);
@@ -103,11 +96,17 @@ export class UserList implements OnInit {
     const userData = this.userForm().value();
 
     if (this.editingUser()) {
+      this.userService
+        .updateUser(this.editingUser()!.id!, userData)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: () => {
+            this.showToast('User updated successfully', 'success');
+            this.closeUserModal();
+          },
+          error: (error) => this.showToast(error.message || 'Failed to update user', 'danger'),
+        });
     } else {
-      /* Update roleName if creating a new user */
-      const roleName = this.roles().find((r) => r.id === userData.roleId)?.name || '';
-      userData.roleName = roleName;
-
       this.userService
         .createUser(userData)
         .pipe(takeUntilDestroyed(this.destroyRef))
@@ -121,6 +120,10 @@ export class UserList implements OnInit {
           },
         });
     }
+  }
+
+  getRoleName(roleId: string): string{
+    return this.roles().find(r => r.id === roleId)?.name || '';
   }
 
   deleteUser(userId: string) {}

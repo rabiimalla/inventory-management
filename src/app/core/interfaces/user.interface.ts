@@ -6,5 +6,4 @@ export interface UserParams {
   roleId: string;
   createdAt: Date | undefined;
   updatedAt: Date | undefined;
-  roleName?: string;
 }

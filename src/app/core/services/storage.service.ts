@@ -80,8 +80,7 @@ export class StorageService{
         email: 'admin.user@email.com',
         roleId: adminRoleId,
         createdAt: new Date(),
-        updatedAt: new Date(),
-        roleName: 'Admin'
+        updatedAt: new Date()
       },
       {
         id: randomId(),
@@ -90,8 +89,7 @@ export class StorageService{
         email: 'supervisor.user@email.com',
         roleId: supervisorRoleId,
         createdAt: new Date(),
-        updatedAt: new Date(),
-        roleName: 'Supervisor'
+        updatedAt: new Date()
       },
       {
         id: randomId(),
@@ -101,7 +99,6 @@ export class StorageService{
         roleId: salesRoleId,
         createdAt: new Date(),
         updatedAt: new Date(),
-        roleName: 'Salesperson'
       }
     ];
 

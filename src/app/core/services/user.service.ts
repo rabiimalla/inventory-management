@@ -32,26 +32,59 @@ export class UserService {
     return of(newUser).pipe(delay(300));
   }
 
+  updateUser(id: string, updates: Partial<UserParams>): Observable<UserParams> {
+    const users = this.usersSignal();
+    const index = users.findIndex((u) => u.id === id);
+
+    if (index === -1) {
+      return throwError(() => new Error(`User ${id} not found`));
+    }
+
+    /* Check if the user with the given username or email already exists */
+    if (updates.username || updates.email) {
+      const duplicateError = this.checkDuplicateUser(updates, index);
+
+      if (duplicateError) {
+        return duplicateError;
+      }
+    }
+
+    updates.updatedAt = new Date();
+    const updatedUser = { ...users[index], ...updates };
+    const updatedUsers = [...users];
+    updatedUsers[index] = updatedUser;
+
+    this.usersSignal.set(updatedUsers);
+    saveToStorage('users', updatedUsers);
+
+    return of(updatedUser).pipe(delay(300));
+  }
+
   private checkDuplicateUser(
     user: Partial<UserParams>,
     userIndex?: number
   ): Observable<never> | null {
     const users = this.usersSignal();
-    const usernameTaken = userIndex
-      ? users.find(
-          (u, i) => i !== userIndex && u.username.toLowerCase() === user.username!.toLowerCase()
-        )
-      : users.find((u) => u.username.toLowerCase() === user.username!.toLowerCase());
 
-    if (!!usernameTaken) {
+    const usernameTaken =
+      userIndex !== undefined && userIndex > -1
+        ? users.find(
+            (u, i) => i !== userIndex && u.username.toLowerCase() === user.username?.toLowerCase()
+          )
+        : users.find((u) => u.username.toLowerCase() === user.username!.toLowerCase());
+
+    if (usernameTaken) {
       return throwError(() => new Error('Username is already taken.'));
     }
 
-    const emailExists = userIndex
-      ? users.find((u, i) => i !== userIndex && u.email.toLowerCase() === user.email!.toLowerCase())
-      : users.find((u) => u.email.toLowerCase() === user.email!.toLowerCase());
+    const emailExists =
+      userIndex !== undefined && userIndex > -1
+        ? users.find(
+            (u, i) => i !== userIndex && u.email.toLowerCase() === user.email!.toLowerCase()
+          )
+        : users.find((u) => u.email.toLowerCase() === user.email!.toLowerCase());
 
-    if (!!emailExists) {
+    if (emailExists) {
       return throwError(() => new Error('Email is already used.'));
     }
 
