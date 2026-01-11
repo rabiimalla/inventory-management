@@ -6,4 +6,5 @@ export interface UserParams {
   roleId: string;
   createdAt: Date;
   updatedAt: Date;
+  roleName?: string 
 }
