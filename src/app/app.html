@@ -1,25 +1,34 @@
+@let user = auth.currentUser$ | async;
+
 <div class="container py-1 py-md-3">
   <!-- Navigation -->
-      <nav class="navbar navbar-expand-lg">
-        <div class="container-fluid">
-          <a routerLink="/" class="navbar-brand">Inventory System</a>
-          <button class="navbar-toggler" type="button" 
-            data-bs-toggle="collapse" data-bs-target="#navbarDropdown" 
-            aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation"
-          >
-            <span class="navbar-toggler-icon"></span>
-          </button>
+  <nav class="navbar navbar-expand-lg">
+    <div class="container-fluid">
+      <a routerLink="/" class="navbar-brand">Inventory System</a>
+      @if(auth.isAuthenticated()) {
+        <button class="navbar-toggler" type="button" 
+          data-bs-toggle="collapse" data-bs-target="#navbarDropdown" 
+          aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
 
-          <div class="collapse navbar-collapse" id="navbarDropdown">
-            <ul class="navbar-nav">
-              List of nav items goes here
-            </ul>
-          </div>
+        <div class="collapse navbar-collapse" id="navbarDropdown">
+          <ul class="navbar-nav">
+            Nav items goes here
+          </ul>
         </div>
-      </nav>
-      
-      <!-- Main content -->
-      <main class="main-content">
-        <router-outlet></router-outlet>
-      </main>
+
+        <div class="user-section d-flex gap-2 align-items-center">
+          <span>{{  user?.fullname }}</span>
+          <button class="btn btn-link" (click)="logout()">Logout</button>
+        </div>
+      }
+    </div>
+  </nav>
+
+  <!-- Main content -->
+  <main class="main-content">
+    <router-outlet></router-outlet>
+  </main>
 </div>

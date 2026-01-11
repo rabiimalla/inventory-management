@@ -1,5 +1,6 @@
 import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { Router } from '@angular/router';
 
 import { map, Observable } from 'rxjs';
 
@@ -14,10 +15,13 @@ import { Permission } from '../enums/permission.enum';
 export class AuthService {
   private currentUserSignal = signal<UserParams | null>(null);
   private currentRoleSignal = signal<RoleParams | null>(null);
-  
+
+  isAuthenticated = computed(() => this.currentRoleSignal() !== null);
+  currentUser$ = toObservable(this.currentUserSignal);
+
   private destroyRef = inject(DestroyRef);
-  
-  constructor(private storage: StorageService) {
+
+  constructor(private storage: StorageService, private router: Router) {
     /* Restore the session from localStorage */
     const savedUser = localStorage.getItem('currentUser');
     if (savedUser) {
@@ -41,9 +45,15 @@ export class AuthService {
         }
 
         throw new Error('Something is wrong with the provided data');
-        
       })
     );
+  }
+
+  logout() {
+    this.currentRoleSignal.set(null);
+    this.currentRoleSignal.set(null);
+    localStorage.removeItem('currentUser');
+    this.router.navigate(['/login']);
   }
 
   hasPermission(permission: Permission): boolean {
@@ -51,7 +61,7 @@ export class AuthService {
   }
 
   canAccess(permissions: Permission[]): boolean {
-    return permissions.some(permission => this.hasPermission(permission));
+    return permissions.some((permission) => this.hasPermission(permission));
   }
 
   private setCurrentUser(user: UserParams) {
