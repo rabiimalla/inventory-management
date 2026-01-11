@@ -31,6 +31,11 @@ export class Login implements OnInit {
 
   ngOnInit(): void {
     this.users$ = this.storage.users$;
+
+    /* Later should redirect to dashboard it the user is signed in. For now we redirect to Roles page */
+    if(this.auth.isAuthenticated()) {
+      this.router.navigate(['/roles']);
+    }
   }
 
   loginFormModel = signal<AuthLogin>({
