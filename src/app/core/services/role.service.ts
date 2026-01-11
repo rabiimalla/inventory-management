@@ -1,24 +1,25 @@
-import { Injectable, signal } from "@angular/core";
-import { RoleParams } from "../interfaces/role.interface";
-import { delay, Observable, of, throwError } from "rxjs";
-import { getFromStorage, randomId, saveToStorage } from "./helper.service";
+import { Injectable, signal } from '@angular/core';
+import { RoleParams } from '../interfaces/role.interface';
+import { delay, Observable, of, throwError } from 'rxjs';
+import { getFromStorage, randomId, saveToStorage } from './helper.service';
+import { toObservable } from '@angular/core/rxjs-interop';
 
-@Injectable({providedIn: 'root'})
+@Injectable({ providedIn: 'root' })
 export class RoleService {
   private rolesSignal = signal<RoleParams[]>(getFromStorage<RoleParams[]>('roles') || []);
-  
-  createRole(roleData: Omit<RoleParams, 'id' | 'createdAt'>): Observable<RoleParams> {
-    const existingRole = this.rolesSignal()
-      .find(r => r.name.toLowerCase() === roleData.name.toLowerCase());
+  roles$ = toObservable(this.rolesSignal);
 
-    if(existingRole) {
-      return throwError(() => new Error('Role with the given name already exists.'));
+  createRole(roleData: Omit<RoleParams, 'id' | 'createdAt'>): Observable<RoleParams> {
+    const duplicateError = this.checkDuplicateRole(roleData);
+
+    if(duplicateError) {
+      return duplicateError;
     }
 
     const newRole: RoleParams = {
       ...roleData,
       id: randomId(),
-      createdAt: new Date()
+      createdAt: new Date(),
     };
 
     const updatedRoles = [...this.rolesSignal(), newRole];
@@ -28,4 +29,46 @@ export class RoleService {
     return of(newRole).pipe(delay(300));
   }
 
+  updateRole(id: string, updates: Partial<RoleParams>): Observable<RoleParams> {
+    const roles = this.rolesSignal();
+    const index = roles.findIndex((r) => r.id === id);
+
+    if (index === -1) {
+      return throwError(() => new Error(`Role ${id} not found`));
+    }
+
+    /* Check if the role with the given name already exists */
+    if (updates.name) {
+      const duplicateError = this.checkDuplicateRole(updates, index);
+      
+      if(duplicateError) {
+        return duplicateError;
+      }
+    }
+
+    const updatedRole = { ...roles[index], ...updates };
+    const updatedRoles = [...roles];
+    updatedRoles[index] = updatedRole;
+
+    this.rolesSignal.set(updatedRoles);
+    saveToStorage('roles', updatedRoles);
+
+    return of(updatedRole).pipe(delay(300));
+  }
+
+  private checkDuplicateRole(
+    role: Partial<RoleParams>,
+    roleIndex?: number
+  ): Observable<never> | null {
+    const roles = this.rolesSignal();
+    const existingRole = roleIndex
+      ? roles.find((r, i) => i !== roleIndex && r.name.toLowerCase() === role.name!.toLowerCase())
+      : roles.find((r) => r.name.toLowerCase() === role.name!.toLowerCase());
+
+    if (existingRole) {
+      return throwError(() => new Error('Role with the given name already exists.'));
+    }
+
+    return null;
+  }
 }

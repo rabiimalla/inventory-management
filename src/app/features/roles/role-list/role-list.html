@@ -16,6 +16,65 @@
     }
   </div>
 
+  <!-- Roles List Table -->
+  <div class="card shadow-sm">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th class="ps-4">Role Name</th>
+              <th>Permissions</th>
+              @if(canManageRoles()) {
+                <th class="text-end pe-4">Actions</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (role of roles(); track role.id) {
+              <tr>
+                <td class="ps-4">
+                  <div class="d-flex align-items-center">
+                    <div>
+                      <h6 class="mb-0">{{ role.name }}</h6>
+                      <small class="text-muted">ID: {{ role.id }}</small>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="d-flex flex-wrap gap-1">
+                    @for (permission of role.permissions.slice(0, 3); track permission) {
+                      <span class="badge bg-secondary bg-opacity-10 text-secondary">
+                        {{ permission }}
+                      </span>
+                    }
+                    @if (role.permissions.length > 3) {
+                      <span class="badge bg-light text-muted">
+                        +{{ role.permissions.length - 3 }} more
+                      </span>
+                    }
+                  </div>
+                </td>
+                @if(canManageRoles()){
+                  <td class="text-end pe-4">
+                    <div class="btn-group" role="group">
+                      <button 
+                        class="btn btn-sm btn-outline-primary"
+                        (click)="openEditModal(role)"
+                      >
+                        <i class="bi bi-pencil"></i>
+                      </button>
+                    </div>
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <!-- Create/Edit Role Modal -->
   <div 
     class="modal fade" 
