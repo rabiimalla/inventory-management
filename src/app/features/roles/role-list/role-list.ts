@@ -20,7 +20,6 @@ export class RoleList implements OnInit {
 
   /* Modal state */
   showRoleModal = signal(false);
-  showDeleteModal = signal(false);
   editingRole = signal<RoleParams | null>(null);
 
   roleSelectTouched = signal(false);
