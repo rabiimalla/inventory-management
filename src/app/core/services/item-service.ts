@@ -8,7 +8,7 @@ import { Item } from '../interfaces/item.interface';
 
 @Injectable({ providedIn: 'root' })
 export class ItemService {
-  private itemsSignal = signal<Item[]>(getFromStorage<Item[]>('items') || []);
+  itemsSignal = signal<Item[]>(getFromStorage<Item[]>('items') || []);
   items$ = toObservable(this.itemsSignal);
 
   addItem(itemData: Omit<Item, 'id' | 'createdAt' | 'updatedAt'>): Observable<Item> {
@@ -74,6 +74,12 @@ export class ItemService {
     saveToStorage('items', updatedItems);
 
     return of(true).pipe(delay(500));
+  }
+
+  /* This is called from sales service. When item is sold or restocked, its(item's) changes are reflected in the sales page*/
+  updateItems(items: Item[]) {
+    this.itemsSignal.set(items);
+    saveToStorage('items', items);
   }
 
   private checkDuplicateItem(

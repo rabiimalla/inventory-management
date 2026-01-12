@@ -34,6 +34,111 @@
             </button>
           </div>
 
+          <!-- Items Grid -->
+          <div class="row row-cols-1 row-cols-md-2 g-3">
+            @for (item of availableItems(); track item.id) {
+              <div class="col">
+                <div class="card h-100 border" [class.border-warning]="item.stock <= item.minStockLevel">
+                  
+                  <!-- Item Header -->
+                  <div class="card-header bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                      <h6 class="mb-0">{{ item.name }}</h6>
+                      <span> {{ item.stock }} in stock </span>
+                    </div>
+                  </div>
+                  
+                  <!-- Item Body -->
+                  <div class="card-body">
+                    <div class="mb-3">
+                      <small class="text-muted d-block">Min Stock: {{ item.minStockLevel }}</small>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                      <div>
+                        <h5 class="text-success mb-0">
+                          {{ item.price | currency:'USD':'symbol' }}
+                        </h5>
+                        <small class="text-muted">
+                          Cost: {{ item.cost | currency:'USD':'symbol' }}
+                        </small>
+                      </div>
+                      
+                      <!-- Profit Margin Badge -->
+                      <span class="badge">
+                        {{ getMarginPercentage(item) }}% margin
+                      </span>
+                    </div>
+
+                    <!-- Sale Controls -->
+                    <div class="sale-controls">
+                      <div class="input-group mb-2">
+                        <button 
+                          class="btn btn-outline-secondary" 
+                          type="button"
+                          (click)="decrementQuantity(item)"
+                          [disabled]="getSaleQuantity(item) <= 1"
+                        >
+                          <i class="bi bi-dash"></i>
+                        </button>
+                        
+                        <input
+                          type="number"
+                          class="form-control text-center"
+                          [value]="getSaleQuantity(item)"
+                          (change)="updateQuantity(item, $event)"
+                          min="1"
+                          [max]="item.stock"
+                          [disabled]="item.stock === 0"
+                        />
+                        
+                        <button 
+                          class="btn btn-outline-secondary" 
+                          type="button"
+                          (click)="incrementQuantity(item)"
+                          [disabled]="getSaleQuantity(item) >= item.stock"
+                        >
+                          <i class="bi bi-plus"></i>
+                        </button>
+                      </div>
+                      
+                      <!-- Action Buttons -->
+                      <div class="d-grid gap-2">
+                        <button
+                          class="btn btn-success"
+                          (click)="sellItem(item)"
+                          [disabled]="item.stock === 0"
+                        >
+                          <i class="bi bi-cart-check me-2"></i>
+                          Sell {{ getSaleQuantity(item) }} Unit(s)
+                          <span class="ms-2">
+                            = {{ calculateTotal(item) | currency:'USD':'symbol' }}
+                          </span>
+                        </button>
+                        <button
+                          class="btn btn-outline-primary btn-sm"
+                        >
+                          <i class="bi bi-plus-circle me-1"></i>
+                          Restock
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Stock Warning -->
+                  @if (item.stock <= item.minStockLevel) {
+                    <div class="card-footer bg-warning bg-opacity-10">
+                      <small class="text-warning">
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        Low stock warning
+                      </small>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
           <!-- Empty State -->
           @if (availableItems().length === 0) {
           <div class="text-center py-5">

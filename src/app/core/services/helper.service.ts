@@ -4,6 +4,7 @@ import { computed, Signal } from '@angular/core';
 import { Item } from '../interfaces/item.interface';
 import { RoleParams } from '../interfaces/role.interface';
 import { UserParams } from '../interfaces/user.interface';
+import { Sale } from '../interfaces/sale.interface';
 
 export const STORAGE_PREFIX = 'inventory_system_';
 
@@ -14,7 +15,7 @@ export const getFromStorage = <T>(key: string): T | null => {
   return data ? JSON.parse(data) : null;
 };
 
-export const saveToStorage = (key: string, data: RoleParams[] | UserParams[] | Item[]) =>
+export const saveToStorage = (key: string, data: RoleParams[] | UserParams[] | Item[] | Sale[]) =>
   localStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(data));
 
 export const formFieldError = (
