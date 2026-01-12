@@ -7,9 +7,9 @@ import {
   OnInit,
   signal,
 } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { CurrencyPipe } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { debounce, form, Field, min, max } from '@angular/forms/signals';
 
 import { Item } from '../../core/interfaces/item.interface';
 import { Sale } from '../../core/interfaces/sale.interface';
@@ -22,7 +22,7 @@ import { Permission } from '../../core/enums/permission.enum';
 
 @Component({
   selector: 'app-sales',
-  imports: [FormsModule, CurrencyPipe],
+  imports: [CurrencyPipe, Field],
   templateUrl: './sales.html',
   styleUrl: './sales.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -31,13 +31,17 @@ export class Sales implements OnInit {
   private destroyRef = inject(DestroyRef);
   itemsSignal = signal<Item[]>([]);
   salesSignal = signal<Sale[]>([]);
-  searchTerm = signal('');
   currentUser = signal<UserParams | null>(null);
   saleQuantities = signal<Record<string, number>>({});
   canManageItems = signal(false);
 
+  searchTerm = signal('');
+  searchForm = form(this.searchTerm, (searchFormSchema) => {
+    debounce(searchFormSchema, 400);
+  });
+
   availableItems = computed(() => {
-    const search = this.searchTerm().toLowerCase();
+    const search = this.searchTerm();
     const items = this.itemsSignal();
 
     return search
@@ -49,6 +53,10 @@ export class Sales implements OnInit {
   showRestockModal = signal(false);
   itemToRestock = signal<Item | null>(null);
   restockQuantity = signal(10);
+  restockForm = form(this.restockQuantity, (fSchema) => {
+    min(fSchema, 1);
+    max(fSchema, 1000);
+  });
 
   constructor(
     private itemsService: ItemService,
@@ -73,15 +81,6 @@ export class Sales implements OnInit {
     this.saleService.sales$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((sales) => this.salesSignal.set(sales));
-  }
-
-  // Search functionality
-  onSearchChange(term: string): void {
-    this.searchTerm.set(term);
-  }
-
-  clearSearch() {
-    this.searchTerm.set('');
   }
 
   // Sale functionality
