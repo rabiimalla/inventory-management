@@ -1,5 +1,5 @@
-import { Component, computed, DestroyRef, inject, OnInit, Signal, signal } from '@angular/core';
-import { email, Field, FieldState, form, minLength, required } from '@angular/forms/signals';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { email, Field, form, minLength, required } from '@angular/forms/signals';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { AuthService } from '../../../core/services/auth.service';
@@ -8,6 +8,7 @@ import { UserParams } from '../../../core/interfaces/user.interface';
 import { RoleParams } from '../../../core/interfaces/role.interface';
 import { RoleService } from '../../../core/services/role.service';
 import { UserService } from '../../../core/services/user.service';
+import { formFieldError, showToast } from '../../../core/services/helper.service';
 
 @Component({
   selector: 'app-user-list',
@@ -46,10 +47,10 @@ export class UserList implements OnInit {
     required(userFormSchema.roleId, { message: 'Must select one role.' });
   });
 
-  fullnameError = this.formFieldErrors(this.userForm.fullname());
-  emailError = this.formFieldErrors(this.userForm.email());
-  usernameError = this.formFieldErrors(this.userForm.username());
-  roleIdError = this.formFieldErrors(this.userForm.roleId());
+  fullnameError = formFieldError(this.userForm.fullname());
+  emailError = formFieldError(this.userForm.email());
+  usernameError = formFieldError(this.userForm.username());
+  roleIdError = formFieldError(this.userForm.roleId());
 
   constructor(
     private auth: AuthService,
@@ -101,10 +102,10 @@ export class UserList implements OnInit {
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
           next: () => {
-            this.showToast('User updated successfully', 'success');
+            showToast('User updated successfully', 'success');
             this.closeUserModal();
           },
-          error: (error) => this.showToast(error.message || 'Failed to update user', 'danger'),
+          error: (error) => showToast(error.message || 'Failed to update user', 'danger'),
         });
     } else {
       this.userService
@@ -112,11 +113,11 @@ export class UserList implements OnInit {
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
           next: () => {
-            this.showToast('User created successfully', 'success');
+            showToast('User created successfully', 'success');
             this.closeUserModal();
           },
           error: (error) => {
-            this.showToast(error.message || 'Failed to create user', 'danger');
+            showToast(error.message || 'Failed to create user', 'danger');
           },
         });
     }
@@ -136,23 +137,9 @@ export class UserList implements OnInit {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe({
-        next: () => this.showToast('User deleted successfully', 'success'),
-        error: (error) => this.showToast(error.message || 'Failed to delete user', 'danger')
+        next: () => showToast('User deleted successfully', 'success'),
+        error: (error) => showToast(error.message || 'Failed to delete user', 'danger')
       })
     }
-  }
-
-  private formFieldErrors(field: FieldState<string, string>): Signal<string | undefined> {
-    return computed(() => {
-      if (field.touched() && field.dirty() && field.errors()) {
-        return field.errors()[0]?.message;
-      }
-      return '';
-    });
-  }
-
-  private showToast(message: string, type: 'success' | 'danger' | 'warning') {
-    // Simply show an alert for demo. In real project, a toast service should be used instead
-    alert(`${type.toUpperCase()}: ${message}`);
   }
 }
