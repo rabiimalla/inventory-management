@@ -4,11 +4,12 @@ import { toObservable } from '@angular/core/rxjs-interop';
 import { delay, Observable, of, throwError } from 'rxjs';
 
 import { UserParams } from '../interfaces/user.interface';
-import { getFromStorage, randomId, saveToStorage } from './helper.service';
+import { randomId } from './helper.service';
+import { StorageService } from './storage.service';
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
-  private usersSignal = signal<UserParams[]>(getFromStorage<UserParams[]>('users') || []);
+  private usersSignal = signal<UserParams[]>(StorageService.getFromStorage<UserParams[]>('users') || []);
   users$ = toObservable(this.usersSignal);
 
   createUser(userData: Omit<UserParams, 'id' | 'createdAt' | 'updatedAt'>): Observable<UserParams> {
@@ -27,7 +28,7 @@ export class UserService {
 
     const updatedUsers = [...this.usersSignal(), newUser];
     this.usersSignal.set(updatedUsers);
-    saveToStorage('users', updatedUsers);
+    StorageService.saveToStorage('users', updatedUsers);
 
     return of(newUser).pipe(delay(300));
   }
@@ -55,7 +56,7 @@ export class UserService {
     updatedUsers[index] = updatedUser;
 
     this.usersSignal.set(updatedUsers);
-    saveToStorage('users', updatedUsers);
+    StorageService.saveToStorage('users', updatedUsers);
 
     return of(updatedUser).pipe(delay(300));
   }
@@ -72,7 +73,7 @@ export class UserService {
 
     const updatedUsers = this.usersSignal().filter((user) => user.id !== id);
     this.usersSignal.set(updatedUsers);
-    saveToStorage('users', updatedUsers);
+    StorageService.saveToStorage('users', updatedUsers);
 
     return of(true).pipe(delay(300));
   }

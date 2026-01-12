@@ -4,12 +4,13 @@ import { Router } from '@angular/router';
 
 import { map, Observable } from 'rxjs';
 
-import { StorageService } from './storage.service';
 import { AuthLogin } from '../interfaces/auth-login.interface';
 
 import { RoleParams } from '../interfaces/role.interface';
 import { UserParams } from '../interfaces/user.interface';
 import { Permission } from '../enums/permission.enum';
+import { UserService } from './user.service';
+import { RoleService } from './role.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -21,7 +22,11 @@ export class AuthService {
 
   private destroyRef = inject(DestroyRef);
 
-  constructor(private storage: StorageService, private router: Router) {
+  constructor(
+    private router: Router,
+    private userService: UserService,
+    private rolesService: RoleService
+  ) {
     /* Restore the session from localStorage */
     const savedUser = localStorage.getItem('currentUser');
     if (savedUser) {
@@ -31,7 +36,7 @@ export class AuthService {
 
   /* Handle login. In real world we would call backend API, here we are just simulating */
   login(loginCreds: AuthLogin): Observable<boolean> {
-    return this.storage.getUsers().pipe(
+    return this.userService.users$.pipe(
       map((users) => {
         // For Demo only, we accept 'password' to be a valid password for any user as it is done in the backend in real world scenario
         const user = users.find(
@@ -67,8 +72,8 @@ export class AuthService {
   private setCurrentUser(user: UserParams) {
     this.currentUserSignal.set(user);
 
-    this.storage
-      .getRoles()
+    this.rolesService
+      .roles$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((roles) => {
         const role = roles.find((r) => r.id === user.roleId) || null;

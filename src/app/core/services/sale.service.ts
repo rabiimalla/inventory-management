@@ -1,14 +1,15 @@
 import { Injectable, signal } from "@angular/core";
-import { Sale } from "../interfaces/sale.interface";
-import { delay, Observable, of } from "rxjs";
-import { Item } from "../interfaces/item.interface";
-import { getFromStorage, randomId, saveToStorage } from "./helper.service";
 import { toObservable } from "@angular/core/rxjs-interop";
+import { delay, Observable, of } from "rxjs";
+
+import { Sale } from "../interfaces/sale.interface";
+import { randomId } from "./helper.service";
 import { ItemService } from "./item-service";
+import { StorageService } from "./storage.service";
 
 @Injectable({providedIn: 'root'})
 export class SaleService {
-  salesSignal = signal<Sale[]>(getFromStorage<Sale[]>('sales') || []);
+  salesSignal = signal<Sale[]>(StorageService.getFromStorage<Sale[]>('sales') || []);
   sales$ = toObservable(this.salesSignal)
 
   constructor(
@@ -57,7 +58,7 @@ export class SaleService {
     this.itemsService.updateItems(updatedItems);
     
     this.salesSignal.set(updatedSales);
-    saveToStorage('sales', updatedSales);
+    StorageService.saveToStorage('sales', updatedSales);
     
     return of(sale).pipe(delay(600));
   }

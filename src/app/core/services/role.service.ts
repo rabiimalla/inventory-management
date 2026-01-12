@@ -5,12 +5,13 @@ import { delay, Observable, of, throwError } from 'rxjs';
 
 import { UserParams } from '../interfaces/user.interface';
 import { RoleParams } from '../interfaces/role.interface';
-import { getFromStorage, randomId, saveToStorage } from './helper.service';
+import { randomId } from './helper.service';
+import { StorageService } from './storage.service';
 
 @Injectable({ providedIn: 'root' })
 export class RoleService {
-  private rolesSignal = signal<RoleParams[]>(getFromStorage<RoleParams[]>('roles') || []);
-  private usersSignal = signal<UserParams[]>(getFromStorage<UserParams[]>('users') || []);
+  private rolesSignal = signal<RoleParams[]>(StorageService.getFromStorage<RoleParams[]>('roles') || []);
+  private usersSignal = signal<UserParams[]>(StorageService.getFromStorage<UserParams[]>('users') || []);
   roles$ = toObservable(this.rolesSignal);
 
   createRole(roleData: Omit<RoleParams, 'id' | 'createdAt'>): Observable<RoleParams> {
@@ -28,7 +29,7 @@ export class RoleService {
 
     const updatedRoles = [...this.rolesSignal(), newRole];
     this.rolesSignal.set(updatedRoles);
-    saveToStorage('roles', updatedRoles);
+    StorageService.saveToStorage('roles', updatedRoles);
 
     return of(newRole).pipe(delay(300));
   }
@@ -55,7 +56,7 @@ export class RoleService {
     updatedRoles[index] = updatedRole;
 
     this.rolesSignal.set(updatedRoles);
-    saveToStorage('roles', updatedRoles);
+    StorageService.saveToStorage('roles', updatedRoles);
 
     return of(updatedRole).pipe(delay(300));
   }
@@ -81,7 +82,7 @@ export class RoleService {
 
     const updatedRoles = this.rolesSignal().filter((role) => role.id !== id);
     this.rolesSignal.set(updatedRoles);
-    saveToStorage('roles', updatedRoles);
+    StorageService.saveToStorage('roles', updatedRoles);
 
     return of(true).pipe(delay(300));
   }

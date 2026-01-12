@@ -3,12 +3,13 @@ import { toObservable } from '@angular/core/rxjs-interop';
 
 import { delay, Observable, of, throwError } from 'rxjs';
 
-import { getFromStorage, randomId, saveToStorage } from './helper.service';
+import { randomId } from './helper.service';
 import { Item } from '../interfaces/item.interface';
+import { StorageService } from './storage.service';
 
 @Injectable({ providedIn: 'root' })
 export class ItemService {
-  itemsSignal = signal<Item[]>(getFromStorage<Item[]>('items') || []);
+  itemsSignal = signal<Item[]>(StorageService.getFromStorage<Item[]>('items') || []);
   items$ = toObservable(this.itemsSignal);
 
   addItem(itemData: Omit<Item, 'id' | 'createdAt' | 'updatedAt'>): Observable<Item> {
@@ -27,7 +28,7 @@ export class ItemService {
 
     const updatedItems = [...this.itemsSignal(), newItem];
     this.itemsSignal.set(updatedItems);
-    saveToStorage('items', updatedItems);
+    StorageService.saveToStorage('items', updatedItems);
 
     return of(newItem).pipe(delay(300));
   }
@@ -55,7 +56,7 @@ export class ItemService {
     updateItems[index] = updateItem;
 
     this.itemsSignal.set(updateItems);
-    saveToStorage('items', updateItems);
+    StorageService.saveToStorage('items', updateItems);
 
     return of(updateItem).pipe(delay(500));
   }
@@ -71,7 +72,7 @@ export class ItemService {
 
     const updatedItems = this.itemsSignal().filter((item) => item.id !== id);
     this.itemsSignal.set(updatedItems);
-    saveToStorage('items', updatedItems);
+    StorageService.saveToStorage('items', updatedItems);
 
     return of(true).pipe(delay(500));
   }
@@ -79,7 +80,7 @@ export class ItemService {
   /* This is called from sales service. When item is sold or restocked, its(item's) changes are reflected in the sales page*/
   updateItems(items: Item[]) {
     this.itemsSignal.set(items);
-    saveToStorage('items', items);
+    StorageService.saveToStorage('items', items);
   }
 
   private checkDuplicateItem(

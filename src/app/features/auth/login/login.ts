@@ -12,6 +12,7 @@ import { StorageService } from '../../../core/services/storage.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { showToast } from '../../../core/services/helper.service';
 import { Permission } from '../../../core/enums/permission.enum';
+import { UserService } from '../../../core/services/user.service';
 
 @Component({
   selector: 'app-login',
@@ -28,11 +29,12 @@ export class Login implements OnInit {
   constructor(
     private router: Router, 
     private auth: AuthService, 
-    private storage: StorageService
+    private storage: StorageService,
+    private usersService: UserService
   ) {}
 
   ngOnInit(): void {
-    this.users$ = this.storage.users$;
+    this.users$ = this.usersService.users$;
 
     /* Simplified redirection logic */
     if(this.auth.isAuthenticated()) {
