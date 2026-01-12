@@ -72,6 +72,73 @@
           </div>
         </div>
       </div>
+
+      <!-- OPTIONAL METRICS -->
+
+      <!-- Revenue Metrics -->
+      <div class="col-md-6 mb-4">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body">
+            <h6 class="text-muted mb-3">Revenue Overview</h6>
+            <div class="row">
+              <div class="col-6">
+                <div class="mb-3">
+                  <small class="text-muted d-block">Total Revenue</small>
+                  <h4 class="text-success mb-0">
+                    {{ metrics().totalRevenue | currency:'USD':'symbol' }}
+                  </h4>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="mb-3">
+                  <small class="text-muted d-block">Today's Revenue</small>
+                  <h4 class="text-primary mb-0">
+                    {{ metrics().revenueToday | currency:'USD':'symbol' }}
+                  </h4>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Inventory Status -->
+      <div class="col-md-6 mb-4">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body">
+            <h6 class="text-muted mb-3">Inventory Status</h6>
+            <div class="row">
+              <div class="col-6">
+                <div class="mb-3">
+                  <small class="text-muted d-block">Low Stock Items</small>
+                  <div class="d-flex align-items-center">
+                    <h4 class="text-warning mb-0 me-2">{{ metrics().lowStockItems }}</h4>
+                    @if (metrics().lowStockItems > 0) {
+                      <i class="bi bi-exclamation-triangle text-warning"></i>
+                    }
+                  </div>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="mb-3">
+                  <small class="text-muted d-block">Out of Stock</small>
+                  <div class="d-flex align-items-center">
+                    <h4 class="text-danger mb-0 me-2">{{ metrics().outOfStockItems }}</h4>
+                    @if (metrics().outOfStockItems > 0) {
+                      <i class="bi bi-x-circle text-danger"></i>
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="mt-2">
+              <small class="text-muted">
+                {{ items().length }} total items in inventory
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   }
 </div>

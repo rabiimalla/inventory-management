@@ -7,7 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { DatePipe } from '@angular/common';
+import { CurrencyPipe, DatePipe } from '@angular/common';
 
 import { switchMap, tap } from 'rxjs';
 
@@ -20,11 +20,15 @@ interface DashboardMetrics {
   totalItemsSold: number;
   itemsSoldToday: number;
   mostPopularItem: string;
+  totalRevenue: number;
+  revenueToday: number;
+  lowStockItems: number;
+  outOfStockItems: number;
 }
 
 @Component({
   selector: 'app-dashboard',
-  imports: [DatePipe],
+  imports: [DatePipe, CurrencyPipe],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -44,6 +48,10 @@ export class Dashboard implements OnInit {
     totalItemsSold: 0,
     itemsSoldToday: 0,
     mostPopularItem: 'N/A',
+    totalRevenue: 0,
+    revenueToday: 0,
+    lowStockItems: 0,
+    outOfStockItems: 0
   });
 
   constructor(
@@ -107,10 +115,29 @@ export class Dashboard implements OnInit {
 
     const mostPopularItem = items.find((item) => item.id === mostPopularItemId)?.name || 'N/A';
 
+    /* Additional metrics */
+    // 4. Total Revenue (all time) - SUM of sale totals
+    const totalRevenue = sales.reduce((sum, sale) => sum + sale.total, 0);
+
+    // 5. Today's Revenue - SUM of sale totals for today
+    const revenueToday = salesToday.reduce((sum, sale) => sum + sale.total, 0);
+
+    // 6. Low Stock Items - Items at or below min stock level but not zero
+    const lowStockItems = items.filter(item => 
+      item.stock <= item.minStockLevel && item.stock > 0
+    ).length;
+
+    // 7. Out of Stock Items - Items with zero stock
+    const outOfStockItems = items.filter(item => item.stock === 0).length;
+
     this.metrics.set({
       totalItemsSold,
       itemsSoldToday,
       mostPopularItem,
+      totalRevenue,
+      revenueToday,
+      lowStockItems,
+      outOfStockItems
     });
   }
 
