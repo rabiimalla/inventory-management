@@ -78,8 +78,8 @@ export class Login implements OnInit {
       ).
       subscribe({
         next: () => {
-          /* Navigate the user to Dashboard page. For now lets redirect to roles list page */
-          this.router.navigate(['/roles']);
+          /* Navigate the user based on the role. For now simply to to items page */
+          this.router.navigate(['/items']);
           console.log('User logged in successfully.');
         },
         error: (error) => {

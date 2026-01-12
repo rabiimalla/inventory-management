@@ -15,15 +15,23 @@
 
         <div class="collapse navbar-collapse" id="navbarDropdown">
           <ul class="navbar-nav">
-            <li class="nav-item">
-              <a routerLink="/roles" class="nav-link">Roles</a>
-            </li>
-            <li class="nav-item">
-              <a routerLink="/users" class="nav-link">Users</a>
-            </li>
-            <li class="nav-item">
-              <a routerLink="/items" class="nav-link">Items</a>
-            </li>
+            @if(canAccessRoles()) {
+              <li class="nav-item">
+                <a routerLink="/roles" class="nav-link">Roles</a>
+              </li>
+            }
+
+            @if(canAccessUsers()) {
+              <li class="nav-item">
+                <a routerLink="/users" class="nav-link">Users</a>
+              </li>
+            }
+
+            @if(canAccessItems()) {
+              <li class="nav-item">
+                <a routerLink="/items" class="nav-link">Items</a>
+              </li>
+            }
           </ul>
         </div>
 
