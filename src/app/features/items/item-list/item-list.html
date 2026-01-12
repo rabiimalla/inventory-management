@@ -1,0 +1,241 @@
+<div class="container py-4">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="mb-1">Items</h2>
+      <p class="text-muted mb-0">Manage (view, add, edit) items from this page.</p>
+    </div>
+    
+    @if(canManageItems()) {
+      <button 
+        class="btn btn-primary"
+        (click)="openItemModal()"
+      >
+        Add Item
+      </button>
+    }
+  </div>
+
+  <!-- Item List Table -->
+  @if(items().length) {
+    <div class="card shadow-sm">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="ps-4">Name</th>
+                <th>Description</th>
+                <th>Price</th>
+                <th>Cost</th>
+                <th>Stock</th>
+                <th>minStockLevel</th>
+                @if(canManageItems()) {
+                  <th class="text-end pe-4">Actions</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of items(); track item.id) {
+                <tr>
+                  <td class="ps-4">
+                    <div class="d-flex align-items-center">
+                      <h6 class="mb-0">{{ item.name }}</h6>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <h6 class="mb-0 text-truncate" style="max-width: 90px;">{{ item.description }}</h6>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <h6 class="mb-0">{{ item.price }}</h6>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <h6 class="mb-0">{{ item.cost }}</h6>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <h6 class="mb-0">{{ item.stock }}</h6>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <h6 class="mb-0">{{ item.minStockLevel }}</h6>
+                    </div>
+                  </td>
+                  @if(canManageItems()){
+                    <td class="text-end pe-4">
+                      <div class="btn-group" role="group">
+                        <button 
+                          class="btn btn-sm btn-outline-primary mx-1"
+                          (click)="openItemModal(item)"
+                        >
+                          <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger"
+                          (click)="deleteItem(item.id)"
+                        >
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </div>
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <h2>
+      No items found. Add some items first.
+    </h2>
+  }
+
+  <!-- Item modal -->
+   <div 
+    class="modal fade" 
+    [class.show]="showItemModal()" 
+    [style.display]="showItemModal() ? 'block' : 'none'"
+    tabindex="-1"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            {{ editingItem() ? 'Edit Item' : 'Add Item' }}
+          </h5>
+          <button 
+            type="button" 
+            class="btn-close" 
+            (click)="closeItemModal()"
+          ></button>
+        </div>
+
+        <form (submit)="saveItem($event)">
+          <div class="modal-body">
+            <!-- Name -->
+            <div class="mb-3">
+              <label for="name" class="form-label">Name *</label>
+              <input 
+                type="text" 
+                class="form-control"
+                id="name"
+                [field]="itemForm.name"
+                [class.is-invalid]="nameError()"
+                placeholder="Dell laptop"
+              />
+
+              @if(nameError()) {
+                <small class="d-inline-block mt-1 text-danger"> {{ nameError() }} </small>
+              }
+            </div>
+            <!-- Description -->
+            <div class="mb-3">
+              <label for="description" class="form-label">Description</label>
+              <textarea 
+                class="form-control"
+                id="description"
+                [field]="itemForm.description"
+                placeholder="A very nice attractive laptop...."
+              ></textarea>
+            </div>
+            <!-- Stock -->
+            <div class="mb-3">
+              <label for="stock" class="form-label">Stock *</label>
+              <input 
+                type="number" 
+                class="form-control"
+                id="stock"
+                [field]="itemForm.stock"
+                [class.is-invalid]="stockError()"
+              />
+
+              @if(stockError()) {
+                <small class="d-inline-block mt-1 text-danger"> {{ stockError() }} </small>
+              }
+            </div>
+
+            <!-- Price -->
+            <div class="mb-3">
+              <label for="price" class="form-label">Price *</label>
+              <input 
+                type="number" 
+                class="form-control"
+                id="price"
+                [field]="itemForm.price"
+                [class.is-invalid]="priceError()"
+              />
+
+              @if(priceError()) {
+                <small class="d-inline-block mt-1 text-danger"> {{ priceError() }} </small>
+              }
+            </div>
+
+            <!-- Cost -->
+            <div class="mb-3">
+              <label for="cost" class="form-label">Cost *</label>
+              <input 
+                type="number" 
+                class="form-control"
+                id="cost"
+                [field]="itemForm.cost"
+                [class.is-invalid]="costError()"
+              />
+
+              @if(costError()) {
+                <small class="d-inline-block mt-1 text-danger"> {{ costError() }} </small>
+              }
+            </div>
+
+            <!-- Min stock level -->
+            <div class="mb-3">
+              <label for="min-stock-level" class="form-label">Min Stock Level *</label>
+              <input 
+                type="number" 
+                class="form-control"
+                id="min-stock-level"
+                [field]="itemForm.minStockLevel"
+                [class.is-invalid]="minStockLevelError()"
+              />
+
+              @if(minStockLevelError()) {
+                <small class="d-inline-block mt-1 text-danger"> {{ minStockLevelError() }} </small>
+              }
+            </div>
+          </div>
+          
+          <div class="modal-footer">
+            <button 
+              type="button" 
+              class="btn btn-secondary" 
+              (click)="closeItemModal()"
+            >
+              Cancel
+            </button>
+            <button 
+              type="submit" 
+              class="btn btn-primary"
+              [disabled]="itemForm().invalid() || itemForm().submitting()"
+            >
+              {{ editingItem() ? 'Update Item' : 'Add Item' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Backdrop -->
+@if (showItemModal()) {
+  <div 
+    class="modal-backdrop fade show"
+  ></div>
+}

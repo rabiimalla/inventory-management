@@ -1,3 +1,7 @@
+import { FieldState } from '@angular/forms/signals';
+import { computed, Signal } from '@angular/core';
+
+import { Item } from '../interfaces/item.interface';
 import { RoleParams } from '../interfaces/role.interface';
 import { UserParams } from '../interfaces/user.interface';
 
@@ -10,5 +14,21 @@ export const getFromStorage = <T>(key: string): T | null => {
   return data ? JSON.parse(data) : null;
 };
 
-export const saveToStorage = (key: string, data: RoleParams[] | UserParams[]) =>
+export const saveToStorage = (key: string, data: RoleParams[] | UserParams[] | Item[]) =>
   localStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(data));
+
+export const formFieldError = (
+  field: FieldState<string | number, string>
+): Signal<string | undefined> => {
+  return computed(() => {
+    if (field.touched() && field.dirty() && field.errors()) {
+      return field.errors()[0]?.message;
+    }
+    return '';
+  });
+};
+
+export const showToast = (message: string, type: 'success' | 'danger' | 'warning') => {
+  // Simply show an alert for demo. In real project, a toast service should be used instead
+  alert(`${type.toUpperCase()}: ${message}`);
+};
