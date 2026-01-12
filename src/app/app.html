@@ -32,11 +32,20 @@
                 <a routerLink="/items" class="nav-link">Items</a>
               </li>
             }
+
+            @if(canAccessSales()) {
+              <li class="nav-item">
+                <a routerLink="/sales" class="nav-link">Sales</a>
+              </li>
+            }
           </ul>
         </div>
 
         <div class="user-section d-flex gap-2 align-items-center">
-          <span>{{  user?.fullname }}</span>
+          <div class="py-3 badge bg-success fs-6">
+            <i class="bi bi-person-circle me-2"></i>
+            {{ user?.fullname || '' | titlecase }}
+          </div>
           <button class="btn btn-link" (click)="logout()">Logout</button>
         </div>
       }
