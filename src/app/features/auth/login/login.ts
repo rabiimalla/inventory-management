@@ -10,6 +10,8 @@ import { UserParams } from '../../../core/interfaces/user.interface';
 import { AuthLogin } from '../../../core/interfaces/auth-login.interface';
 import { StorageService } from '../../../core/services/storage.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { showToast } from '../../../core/services/helper.service';
+import { Permission } from '../../../core/enums/permission.enum';
 
 @Component({
   selector: 'app-login',
@@ -32,9 +34,11 @@ export class Login implements OnInit {
   ngOnInit(): void {
     this.users$ = this.storage.users$;
 
-    /* Later should redirect to dashboard it the user is signed in. For now we redirect to Roles page */
+    /* Simplified redirection logic */
     if(this.auth.isAuthenticated()) {
-      this.router.navigate(['/roles']);
+      this.auth.canAccess([Permission.VIEW_DASHBOARD]) ?
+      this.router.navigate(['/dashboard']) :
+      this.router.navigate(['/sales']);
     }
   }
 
@@ -78,12 +82,15 @@ export class Login implements OnInit {
       ).
       subscribe({
         next: () => {
-          /* Navigate the user based on the role. For now simply to to items page */
-          this.router.navigate(['/items']);
-          console.log('User logged in successfully.');
+          /* Navigate the user based on the role.*/
+          if(this.auth.canAccess([Permission.VIEW_DASHBOARD])){
+            this.router.navigate(['/dashboard']);
+          } else {
+            this.router.navigate(['/sales']);
+          }
         },
         error: (error) => {
-          console.log('There is an error: ', error);
+          showToast(error.message, 'danger');
         },
       });
   }
