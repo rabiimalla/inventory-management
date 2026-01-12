@@ -18,6 +18,7 @@ import { ItemService } from '../../core/services/item-service';
 import { showToast } from '../../core/services/helper.service';
 import { SaleService } from '../../core/services/sale.service';
 import { AuthService } from '../../core/services/auth.service';
+import { Permission } from '../../core/enums/permission.enum';
 
 @Component({
   selector: 'app-sales',
@@ -33,6 +34,7 @@ export class Sales implements OnInit {
   searchTerm = signal('');
   currentUser = signal<UserParams | null>(null);
   saleQuantities = signal<Record<string, number>>({});
+  canManageItems = signal(false);
 
   availableItems = computed(() => {
     const search = this.searchTerm().toLowerCase();
@@ -43,6 +45,11 @@ export class Sales implements OnInit {
       : items;
   });
 
+  // Restock modal state
+  showRestockModal = signal(false);
+  itemToRestock = signal<Item | null>(null);
+  restockQuantity = signal(10);
+
   constructor(
     private itemsService: ItemService,
     private saleService: SaleService,
@@ -52,10 +59,10 @@ export class Sales implements OnInit {
   ngOnInit(): void {
     this.loadData();
 
-    this.auth.currentUser$
-    .pipe(
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe(user => this.currentUser.set(user));
+    this.auth.currentUser$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((user) => {
+      this.currentUser.set(user);
+      this.canManageItems.set(this.auth.canAccess([Permission.MANAGE_ITEMS]));
+    });
   }
 
   loadData() {
@@ -64,10 +71,8 @@ export class Sales implements OnInit {
       .subscribe((items) => this.itemsSignal.set(items));
 
     this.saleService.sales$
-    .pipe(
-      takeUntilDestroyed(this.destroyRef)
-    )
-    .subscribe((sales) => this.salesSignal.set(sales));
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((sales) => this.salesSignal.set(sales));
   }
 
   // Search functionality
@@ -79,6 +84,7 @@ export class Sales implements OnInit {
     this.searchTerm.set('');
   }
 
+  // Sale functionality
   getSaleQuantity(item: Item): number {
     return this.saleQuantities()[item.id] || 1;
   }
@@ -118,28 +124,23 @@ export class Sales implements OnInit {
     }
   }
 
-  // Sale functionality
   sellItem(item: Item): void {
     const quantity = this.getSaleQuantity(item);
-    
+
     if (quantity > item.stock) {
       showToast(`Cannot sell ${quantity} items. Only ${item.stock} in stock.`, 'danger');
       return;
     }
 
-    const confirmation = confirm(`Sell ${quantity} ${item.name}(s) for ${(item.price * quantity) }?`)
+    const confirmation = confirm(`Sell ${quantity} ${item.name}(s) for ${item.price * quantity}?`);
 
     if (!confirmation) {
       return;
     }
 
-    this.saleService.sellItem(
-      item.id, 
-      quantity, 
-      this.currentUser()?.id || 'system'
-    ).subscribe({
+    this.saleService.sellItem(item.id, quantity, this.currentUser()?.id || 'system').subscribe({
       next: (sale) => {
-        this.saleQuantities.update(quantities => {
+        this.saleQuantities.update((quantities) => {
           const newQuantities = { ...quantities };
           delete newQuantities[item.id]; // Reset quantity for this item
           return newQuantities;
@@ -147,9 +148,54 @@ export class Sales implements OnInit {
 
         showToast(`Sold ${quantity} ${item.name}(s) for ${sale.total}`, 'success');
       },
-      error: (error) => showToast(error.message, 'danger')
+      error: (error) => showToast(error.message, 'danger'),
     });
   }
+  /* ---- Sale logic ---- */
+
+  /* Restock functionality */
+  openRestockModal(item: Item) {
+    this.itemToRestock.set(item);
+    this.showRestockModal.set(true);
+  }
+
+  closeRestockModal(): void {
+    this.showRestockModal.set(false);
+    this.itemToRestock.set(null);
+  }
+
+  incrementRestockQuantity(): void {
+    this.restockQuantity.update((qty) => qty + 1);
+  }
+
+  decrementRestockQuantity(): void {
+    this.restockQuantity.update((qty) => qty - 1);
+  }
+
+  confirmRestock() {
+    const item = this.itemToRestock();
+    if (!item) return;
+
+    const updatedItem = {
+      ...item,
+      stock: item.stock + this.restockQuantity(),
+    };
+
+    this.itemsService.updateItem(item.id, updatedItem).subscribe({
+      next: () => {
+        showToast(`Added ${this.restockQuantity()} units to ${item.name}`, 'success');
+        this.closeRestockModal();
+      },
+      error: (err) => showToast(err.message, 'danger'),
+    });
+  }
+
+  calculateRestockCost(): number {
+    const item = this.itemToRestock();
+    return item ? item.cost * this.restockQuantity() : 0;
+  }
+
+  /* --- Restock logic --- */
 
   calculateTotal(item: Item): number {
     return item.price * this.getSaleQuantity(item);

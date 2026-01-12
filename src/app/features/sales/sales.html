@@ -39,7 +39,6 @@
             @for (item of availableItems(); track item.id) {
               <div class="col">
                 <div class="card h-100 border" [class.border-warning]="item.stock <= item.minStockLevel">
-                  
                   <!-- Item Header -->
                   <div class="card-header bg-light">
                     <div class="d-flex justify-content-between align-items-center">
@@ -109,18 +108,21 @@
                           (click)="sellItem(item)"
                           [disabled]="item.stock === 0"
                         >
-                          <i class="bi bi-cart-check me-2"></i>
                           Sell {{ getSaleQuantity(item) }} Unit(s)
                           <span class="ms-2">
                             = {{ calculateTotal(item) | currency:'USD':'symbol' }}
                           </span>
                         </button>
-                        <button
-                          class="btn btn-outline-primary btn-sm"
-                        >
-                          <i class="bi bi-plus-circle me-1"></i>
-                          Restock
-                        </button>
+                        
+                        @if(canManageItems()) {
+                          <button
+                            class="btn btn-outline-primary btn-sm"
+                            (click)="openRestockModal(item)"
+                          >
+                            <i class="bi bi-plus-circle me-1"></i>
+                            Restock
+                          </button>
+                        }
                       </div>
                     </div>
                   </div>
@@ -141,15 +143,118 @@
 
           <!-- Empty State -->
           @if (availableItems().length === 0) {
-          <div class="text-center py-5">
-            <i class="bi bi-inboxes text-muted display-4 mb-3"></i>
-            <h4>No Items Found</h4>
-            <p class="text-muted">
-              {{ searchTerm() ? 'Try a different search term' : 'No items available for sale' }}
-            </p>
-          </div>
+            <div class="text-center py-5">
+              <i class="bi bi-inboxes text-muted display-4 mb-3"></i>
+              <h4>No Items Found</h4>
+              <p class="text-muted">
+                {{ searchTerm() ? 'Try a different search term' : 'No items available for sale' }}
+              </p>
+            </div>
           }
         </div>
       </div>
     </div>
+  </div>
+</div>
 
+<!-- Restock Modal -->
+<div 
+  class="modal fade" 
+  [class.show]="showRestockModal()" 
+  [style.display]="showRestockModal() ? 'block' : 'none'"
+  tabindex="-1"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          Restock Item
+        </h5>
+        <button 
+          type="button" 
+          class="btn-close" 
+          (click)="closeRestockModal()"
+        ></button>
+      </div>
+      
+      <div class="modal-body">
+        @if (itemToRestock()) {
+          <div class="mb-4">
+            <h6>{{ itemToRestock()!.name }}</h6>
+            <div class="d-flex justify-content-between mb-3">
+              <div>
+                <small class="text-muted">Current Stock</small>
+                <div class="fw-bold fs-4">{{ itemToRestock()!.stock }}</div>
+              </div>
+              <div>
+                <small class="text-muted">Minimum Required</small>
+                <div class="fw-bold">{{ itemToRestock()!.minStockLevel }}</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label">Quantity to Add</label>
+            <div class="input-group">
+              <button 
+                class="btn btn-outline-secondary" 
+                type="button"
+                (click)="decrementRestockQuantity()"
+              >
+                <i class="bi bi-dash"></i>
+              </button>
+              <input
+                type="number"
+                class="form-control text-center"
+                [(ngModel)]="restockQuantity"
+                min="1"
+                max="1000"
+              />
+              <button 
+                class="btn btn-outline-secondary" 
+                type="button"
+                (click)="incrementRestockQuantity()"
+              >
+                <i class="bi bi-plus"></i>
+              </button>
+            </div>
+            <small class="text-muted">
+              New stock will be: {{ itemToRestock()!.stock + restockQuantity() }}
+            </small>
+          </div>
+          
+          <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i>
+            Cost: {{ itemToRestock()!.cost | currency:'USD':'symbol' }} × {{ restockQuantity() }} = 
+            <strong>{{ calculateRestockCost() | currency:'USD':'symbol' }}</strong>
+          </div>
+        }
+      </div>
+      
+      <div class="modal-footer">
+        <button 
+          type="button" 
+          class="btn btn-secondary" 
+          (click)="closeRestockModal()"
+        >
+          Cancel
+        </button>
+        <button 
+          type="button" 
+          class="btn btn-primary"
+          (click)="confirmRestock()"
+        >
+          Restock Item
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Backdrop -->
+@if (showRestockModal()) {
+  <div 
+    class="modal-backdrop fade show"
+    (click)="closeRestockModal()"
+  ></div>
+}
