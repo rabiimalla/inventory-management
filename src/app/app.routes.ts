@@ -37,6 +37,13 @@ export const routes: Routes = [
     data: { permissions: [Permission.MANAGE_SELLS]}
   },
   {
+    path: 'dashboard',
+    loadComponent: () => import('./features/dashboard/dashboard')
+      .then(m => m.Dashboard),
+    canActivate: [RoleGuard],
+    data: { permissions: [Permission.VIEW_DASHBOARD]}
+  },
+  {
     path: 'unauthorized',
     loadComponent: () => import('./features/auth/unauthorized/unauthorized')
       .then(m => m.Unauthorized)

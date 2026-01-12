@@ -38,6 +38,12 @@
                 <a routerLink="/sales" class="nav-link">Sales</a>
               </li>
             }
+
+            @if(canViewDashboard()) {
+              <li class="nav-item">
+                <a routerLink="/dashboard" class="nav-link">Dashboard</a>
+              </li>
+            }
           </ul>
         </div>
 

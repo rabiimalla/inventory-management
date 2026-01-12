@@ -19,6 +19,7 @@ export class App implements OnInit {
   canAccessUsers = signal(false);
   canAccessItems = signal(false);
   canAccessSales = signal(false);
+  canViewDashboard = signal(false);
 
   constructor(public auth: AuthService) {}
 
@@ -29,10 +30,12 @@ export class App implements OnInit {
   }
 
   private manageAccess() {
+    /* NOTE this role management logic should be moved to a custom directive. */
     this.canAccessRoles.set(this.auth.canAccess([Permission.MANAGE_ROLES]));
     this.canAccessUsers.set(this.auth.canAccess([Permission.MANAGE_USERS]));
     this.canAccessItems.set(this.auth.canAccess([Permission.MANAGE_ITEMS]));
     this.canAccessSales.set(this.auth.canAccess([Permission.MANAGE_SELLS]));
+    this.canViewDashboard.set(this.auth.canAccess([Permission.VIEW_DASHBOARD]));
   }
 
   logout() {
